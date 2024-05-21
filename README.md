@@ -14,8 +14,12 @@ The recommendation system and dashboard facilitated data-driven decisions, setti
 
 ## Dataset
 
-* Products: Information about each product, including its name, associated aisle and department.
-* Order Product Set: Products in each order and whether the product was reordered.
-* Depart: Each department’s ID and name.
-* Aisle: Each aisle’s ID and name
-* Order: Information about each orderassociated User ID and order Time
+ * **Products**: Information about each product, including its name, associated aisle and department.
+ * **Order Product Set**: Products in each order and whether the product was reordered.
+ * **Depart**: Each department’s ID and name.
+ * **Aisle**: Each aisle’s ID and name
+ * **Order**: Information about each orderassociated User ID and order Time
+
+## Dashboard Demo
+
+ * [Dashboard Demo](https://wisdom196473.wixsite.com/website/personalized-recommendation-system-i)

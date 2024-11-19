@@ -22,4 +22,4 @@ The recommendation system and dashboard facilitated data-driven decisions, setti
 
 ## Dashboard Demo
 
- * [Dashboard Demo](https://wisdom196473.wixsite.com/website/personalized-recommendation-system-i)
+ * [Dashboard Demo]([https://wisdom196473.wixsite.com/website/personalized-recommendation-system-i](https://personalized-recommendation-system-for-instacart-wisdom.streamlit.app/))

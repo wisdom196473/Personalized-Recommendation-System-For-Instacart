@@ -5,4 +5,3 @@ scikit-learn
 scipy
 datasets
 huggingface_hub
-SQLAlchemy==1.4.0

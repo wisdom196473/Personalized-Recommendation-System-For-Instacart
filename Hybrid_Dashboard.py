@@ -7,73 +7,84 @@ import Content_Based_Filtering_Recommendation_Systems
 import User_Based_Collaborative_Filtering
 from datasets import load_dataset
 
-# Database setup
-DATABASE = ':memory:'
-
-def init_db():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    
-    # Create customer_recommendations table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS customer_recommendations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_name TEXT NOT NULL,
-            recommendation_1 TEXT,
-            recommendation_2 TEXT,
-            recommendation_3 TEXT,
-            recommendation_4 TEXT,
-            recommendation_5 TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    # Create retailer_recommendations table
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS retailer_recommendations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_name TEXT NOT NULL,
-            recommendation_1 TEXT,
-            recommendation_2 TEXT,
-            recommendation_3 TEXT,
-            recommendation_4 TEXT,
-            recommendation_5 TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    conn.commit()
-    return conn
-
 # Create a connection pool using Streamlit's caching
 @st.cache_resource
 def get_connection():
-    return init_db()
+    try:
+        conn = sqlite3.connect(':memory:', check_same_thread=False)  # Allow use in different threads
+        return conn
+    except sqlite3.Error as e:
+        st.error(f"SQLite error occurred: {e}")
+        return None
+
+# Initialize database tables at startup
+def init_tables():
+    conn = get_connection()
+    if not conn:
+        st.error("Failed to initialize database")
+        return
+        
+    try:
+        with conn:
+            # Create customer_recommendations table
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS customer_recommendations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    product_name TEXT NOT NULL,
+                    recommendation_1 TEXT,
+                    recommendation_2 TEXT,
+                    recommendation_3 TEXT,
+                    recommendation_4 TEXT,
+                    recommendation_5 TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Create retailer_recommendations table
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS retailer_recommendations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    product_name TEXT NOT NULL,
+                    recommendation_1 TEXT,
+                    recommendation_2 TEXT,
+                    recommendation_3 TEXT,
+                    recommendation_4 TEXT,
+                    recommendation_5 TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+    except sqlite3.Error as e:
+        st.error(f"Database initialization error: {e}")
 
 def save_recommendations(role, product_name, recommendations):
     conn = get_connection()
+    if not conn:
+        st.error("Failed to connect to database")
+        return False
+        
     table_name = f"{role}_recommendations"
-    
-    # Pad the recommendations list if it's shorter than 5
     recommendations = recommendations + [None]*(5-len(recommendations))
     
     try:
-        conn.execute(f'''
-            INSERT INTO {table_name} (product_name, recommendation_1, recommendation_2, recommendation_3, recommendation_4, recommendation_5)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (product_name, *recommendations[:5]))
-        conn.commit()
+        with conn:  # Use context manager for automatic commit/rollback
+            conn.execute(f'''
+                INSERT INTO {table_name} (product_name, recommendation_1, recommendation_2, recommendation_3, recommendation_4, recommendation_5)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (product_name, *recommendations[:5]))
+        return True
     except sqlite3.Error as e:
         st.error(f"Database error: {e}")
         return False
-    return True
 
 def display_recommendation_history():
     conn = get_connection()
+    if not conn:
+        st.error("Failed to connect to database")
+        return
     
-    # Fetch and display customer recommendations
-    st.subheader('Customer Recommendations')
     try:
+        # Fetch and display customer recommendations
+        st.subheader('Customer Recommendations')
         customer_data = conn.execute('SELECT * FROM customer_recommendations').fetchall()
         if customer_data:
             customer_df = pd.DataFrame(customer_data,
@@ -146,10 +157,14 @@ def convert_df(df):
 
 def clear_history():
     conn = get_connection()
+    if not conn:
+        st.error("Failed to connect to database")
+        return
+        
     try:
-        conn.execute('DELETE FROM customer_recommendations')
-        conn.execute('DELETE FROM retailer_recommendations')
-        conn.commit()
+        with conn:
+            conn.execute('DELETE FROM customer_recommendations')
+            conn.execute('DELETE FROM retailer_recommendations')
         st.success('History cleaned successfully.')
     except sqlite3.Error as e:
         st.error(f"Database error: {e}")
@@ -162,8 +177,10 @@ def load_data():
     df['metadata'] = df.apply(lambda x: x['aisle']+' '+x['department']+' '+x['product_name'], axis=1)
     return df
 
-# Initialize the database connection when the app starts
-conn = get_connection()
+# Initialize database tables at startup
+if 'db_initialized' not in st.session_state:
+    init_tables()
+    st.session_state.db_initialized = True
 
 # Initialize Streamlit app
 st.title("Welcome to our Powerful System")
@@ -176,6 +193,9 @@ st.write("**Current Time:**", current_time)
 # Display the author names
 st.markdown("**Author Names:**")
 st.markdown("**Wisdom Chen** (Data Scientist)")
+st.markdown("**Jessy Hu** (Business Intelligence Specialist)")
+st.markdown("**Yuqing Wu** (Data Scientist)")
+st.markdown("**Boya Zeng** (Machine Learning Scientist)")
 
 # Load the dataset
 df = load_data()

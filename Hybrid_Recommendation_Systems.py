@@ -5,6 +5,7 @@
 # Date: 02/15/2024
 
 import pandas as pd
+from datasets import load_dataset
 import copy
 import warnings
 import sys
@@ -15,8 +16,8 @@ warnings.filterwarnings('ignore')
 import Content_Based_Filtering_Recommendation_Systems
 import User_Based_Collaborative_Filtering
 
-df = pd.read_csv("baby_formula_df.csv")
 
+df = load_dataset("chen196473/Instacart_Baby_Formula")
 
 df_0 = copy.deepcopy(df)
 df_0['metadata'] = df_0.apply(lambda x: x['aisle']+' '+x['department']+' '+x['product_name'], axis = 1)

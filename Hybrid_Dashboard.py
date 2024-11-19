@@ -193,9 +193,6 @@ st.write("**Current Time:**", current_time)
 # Display the author names
 st.markdown("**Author Names:**")
 st.markdown("**Wisdom Chen** (Data Scientist)")
-st.markdown("**Jessy Hu** (Business Intelligence Specialist)")
-st.markdown("**Yuqing Wu** (Data Scientist)")
-st.markdown("**Boya Zeng** (Machine Learning Scientist)")
 
 # Load the dataset
 df = load_data()
